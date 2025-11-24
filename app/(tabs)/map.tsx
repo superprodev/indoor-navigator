@@ -1,4 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
+import { EventSubscription } from "expo-modules-core";
+
 import { useState, useEffect } from "react";
 import { Accelerometer, Magnetometer } from 'expo-sensors';
 import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
@@ -8,7 +10,7 @@ import { View } from "@/components/ui/view";
 import { Button } from "@/components/ui/button";
 import { shallowEqual, useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import { ProfileState, profileSlice } from '@/store/profileSlice';
-import { AppDispatch, RootState } from '@/store';
+import { RootState, AppDispatch } from '@/store';
 
 const { actions } = profileSlice;
 
@@ -147,8 +149,8 @@ export default function ModalScreen() {
 
   const [started, setStarted] = useState(false);
 
-  const [accelSub, setAccelSub] = useState({});
-  const [magSub, setMagSub] = useState({});
+  const [accelSub, setAccelSub] = useState<EventSubscription>();
+  const [magSub, setMagSub] = useState<EventSubscription>();
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [
@@ -236,6 +238,12 @@ export default function ModalScreen() {
     setStarted(prev => !prev);
     askPermissions();
   }
+
+  useEffect(() => {
+    return () => {
+      remove();
+    }
+  });
 
 
   return (
