@@ -1,18 +1,20 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 
-export type ProfileState = {
+export interface ProfileState {
     scale: number,
     x: number,
     y: number,
-    angle: number
+    angle: number,
+    points: Array<ProfileState>
 }
 
 const initialState: ProfileState = {
     scale: 1.0,
     x: 0,
     y: 0,
-    angle: 0
+    angle: 0,
+    points: []
 }
 
 export const profileSlice = createSlice({
@@ -30,6 +32,9 @@ export const profileSlice = createSlice({
     rotate: (state, action) => {
         state.scale = action.payload.angle;
     },
+    insert: (state, action) => {
+        state.points.push(action.payload.point);
+    }
   },
 });
 

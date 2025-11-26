@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DeviceMotion, DeviceMotionMeasurement, Magnetometer, MagnetometerMeasurement } from 'expo-sensors';
 import { EventSubscription } from "expo-modules-core";
-import { StyleSheet,Dimensions } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
 
 import { View } from "@/components/ui/view";
@@ -14,52 +14,53 @@ import { ArrowBigUp, Triangle } from "lucide-react-native";
 const { width, height } = Dimensions.get('screen');
 
 const INIT_VALUE = { x: 0, y: 0, z: 0, timestamp: 0 }
-DeviceMotion.setUpdateInterval(20);
-Magnetometer.setUpdateInterval(20);
+DeviceMotion.setUpdateInterval(100);
+Magnetometer.setUpdateInterval(100);
 
 const FILTER = 0.007;
-const AV = 200;
+const AV = 20;
 
 export default function Sensors() {
 
     const [motion, setMotion] = useState<DeviceMotionMeasurement>();
     const [mag, setMag] = useState<MagnetometerMeasurement>(INIT_VALUE);
-    const [velocity, setVelocity] = useState({ x: 0, y: 0, z: 0 })
     const [pos, setPos] = useState({ x: 0, y: 0, z: 0 });
+    const [velocity, setVelocity] = useState({ x: 0, y: 0, z: 0 });
     const [lastStamp, setLastStamp] = useState(0);
     const [heading, setHeading] = useState(0);
-    const [points, setPoints] = useState<{x: number, y: number, z: number}[]>([]);
-    
+    const [points, setPoints] = useState<{ x: number, y: number, z: number }[]>([]);
+
     const [started, setStarted] = useState(false);
 
-    const [magSub, setMagSub] = useState<EventSubscription>();
     const [devSub, setDevSub] = useState<EventSubscription>();
+    const [magSub, setMagSub] = useState<EventSubscription>();
 
     const askPermissions = async () => {
         await DeviceMotion.requestPermissionsAsync();
         await Magnetometer.requestPermissionsAsync();
 
-        const isEnable = await DeviceMotion.isAvailableAsync();
         const isMag = await Magnetometer.isAvailableAsync();
+        const isEnable = await DeviceMotion.isAvailableAsync();
 
         if (isEnable) {
             setDevSub(DeviceMotion.addListener(data => setMotion(data)));
         }
-        if (isMag) {
+        if (isMag){
             setMagSub(Magnetometer.addListener(data => setMag(data)));
         }
     }
 
     const remove = () => {
-        if(devSub) devSub.remove();
-        if(magSub) magSub.remove();
+        if (devSub) devSub.remove();
+        if (magSub) magSub.remove();
     }
 
     useEffect(() => {
-        if( !motion ) return;
-        
+        if (!motion) return;
+
         let accel = motion.acceleration;
-        if( !accel ) return;
+        let rotation = motion.rotation;
+        if (!accel || !rotation) return;
 
         if (lastStamp === 0) {
             setLastStamp(accel.timestamp);
@@ -68,6 +69,14 @@ export default function Sensors() {
 
         const deltaT = (accel.timestamp - lastStamp);
         setLastStamp(accel.timestamp);
+
+        // const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y);
+        // if (magnitude > 1.2) {
+        //     const stepLength = 0.7; // meters per step (tweak later)
+        //     const rad = 90 - heading * (Math.PI / 180);
+
+
+        // }
 
         let ax = Math.abs(accel.x) < FILTER ? 0 : accel.x;
         let ay = Math.abs(accel.y) < FILTER ? 0 : accel.y;
@@ -92,21 +101,29 @@ export default function Sensors() {
         let deltaY = vY * deltaT;
         let deltaZ = vZ * deltaT;
 
+        let rad = heading * Math.PI / 180;
+        let cos = -Math.cos(rad);
+        let sin = -Math.sin(rad);
+
         setPos(prev => ({
-            x: prev.x + deltaX,
-            y: prev.y + deltaY,
+            x: prev.x + deltaX * cos - deltaY * sin,
+            y: prev.y + deltaX * sin + deltaY * cos,
             z: prev.z + deltaZ
         }));
+
+        if (deltaX == 0 && deltaY == 0) return;
 
         setPoints(prev => {
             prev.push(pos);
             return prev;
         })
 
-
     }, [motion])
 
+
     useEffect(() => {
+        if (mag.x == 0 && mag.y == 0) return;
+
         let angle = 90 - Math.atan2(mag.y, mag.x) * (180 / Math.PI);
         setHeading(angle < 0 ? angle + 360 : angle);
     }, [mag]);
@@ -119,7 +136,7 @@ export default function Sensors() {
         setLastStamp(0);
         setPoints([]);
         setHeading(0);
-        setPos({x: 0, y: 0, z: 0});
+        setPos({ x: 0, y: 0, z: 0 });
     }
 
     const onClickStart = () => {
@@ -129,22 +146,20 @@ export default function Sensors() {
 
     return (
         <View style={styles.container}>
-            {/* <Animated.Image style={{margin: 'auto', transform: [{ rotate: `${heading}deg`}]}} source={require('@/assets/images/compass.png')}/> */}
+            <Animated.Image style={{ marginHorizontal: 'auto', width: 150, height: 150 }} source={require('@/assets/images/compass.png')} />
 
+            <Icon name={ArrowBigUp} size={36} color='black' style={{ zIndex: 2, position: 'absolute', left: width / 2 - pos.x * AV - 18, top: height / 2 - pos.y * AV - 18, transform: [{ rotate: `${-heading}deg` }] }} />
+            <Text> Position:  {JSON.stringify(motion?.acceleration, null, 2)} </Text>
             <View style={styles.button_panel} >
                 <Button variant='success' disabled={started} style={styles.btn} onPress={onClickStart}>Start</Button>
                 <Button variant='destructive' disabled={!started} style={styles.btn} onPress={onClickReset}>Reset</Button>
             </View>
-            <Icon name={ArrowBigUp} size={36} color='black' style={{zIndex: 2, position:'absolute', left: width/2 + pos.x*AV - 18, top: height/2 + pos.z*AV - 18, transform: [{ rotate: `${-heading}deg`}] }}/>
-            <Text> Position:  {JSON.stringify(pos, null, 2)} </Text>
-            <Svg width={width} height={height} style={{position: 'absolute', zIndex: -1}}>
-                <Polyline points={points.map((value, index) => (`${width/2 + value.x*AV},${height/2 + value.z*AV}`)).join(" ")}
+            <Svg width={width} height={height} style={{ position: 'absolute', zIndex: -1 }}>
+                <Polyline points={points.map((value, index) => (`${width / 2 - value.x * AV},${height / 2 - value.y * AV}`)).join(" ")}
                     stroke="red"
                     strokeWidth="4"
                     fill="none" />
             </Svg>
-            
-
         </View>
     );
 }
@@ -154,10 +169,10 @@ export const styles = StyleSheet.create({
         flex: 1,
         display: 'flex',
         justifyContent: 'space-between',
-        alignContent: 'center'
+        alignContent: 'center',
+        color: 'grey'
     },
     button_panel: {
-        marginTop: 30,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-around'

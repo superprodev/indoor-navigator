@@ -32,113 +32,7 @@ export default function ModalScreen() {
   const profile = useAppSelector(state => state.profile, shallowEqual);
   const { x, y } = profile;
 
-  const scale = useSharedValue(profile.scale);
-  const startScale = useSharedValue(0);
-
-  const angle = useSharedValue(profile.angle);
-  const startAngle = useSharedValue(0);
-
-  const translationX = useSharedValue(x);
-  const translationY = useSharedValue(y);
-  const prevTranslationX = useSharedValue(x);
-  const prevTranslationY = useSharedValue(y);
-
-  const root_translationX = useSharedValue(0);
-  const root_translationY = useSharedValue(0);
-  const root_prevTranslationX = useSharedValue(0);
-  const root_prevTranslationY = useSharedValue(0);
-
   const dispatch = useDispatch<AppDispatch>();
-
-
-  const pan = Gesture.Pan()
-    .minDistance(1)
-    .onStart(() => {
-      prevTranslationX.value = translationX.value;
-      prevTranslationY.value = translationY.value;
-    })
-    .onUpdate((event) => {
-      const maxTranslateX = width / 2 - 10;
-      const maxTranslateY = height / 2 - 10;
-
-      translationX.value = clamp(
-        prevTranslationX.value + event.translationX,
-        -maxTranslateX,
-        maxTranslateX
-      );
-      translationY.value = clamp(
-        prevTranslationY.value + event.translationY,
-        -maxTranslateY,
-        maxTranslateY
-      );
-
-      dispatch(actions.move({x: translationX.value, y: translationY.value}));
-    })
-    .runOnJS(true);
-
-  const rootPan = Gesture.Pan()
-    .minDistance(1)
-    .onStart(() => {
-      root_prevTranslationX.value = root_translationX.value;
-      root_prevTranslationY.value = root_translationY.value;
-    })
-    .onUpdate((event) => {
-      const maxTranslateX = width * (scale.value - 1) / 2;
-      const maxTranslateY = height * (scale.value - 1)  / 2;
-
-      root_translationX.value = clamp(
-        root_prevTranslationX.value + event.translationX,
-        -maxTranslateX,
-        maxTranslateX
-      );
-      root_translationY.value = clamp(
-        root_prevTranslationY.value + event.translationY,
-        -maxTranslateY,
-        maxTranslateY
-      );
-    })
-    .runOnJS(true);
-
-  const pinch = Gesture.Pinch()
-    .onStart(() => {
-      startScale.value = scale.value;
-    })
-    .onUpdate((event) => {
-      scale.value = clamp(
-        startScale.value * event.scale,
-        0.5,
-        Math.min(width / 100, height / 100)
-      );
-
-      dispatch(actions.zoom({scale: scale.value}));
-    })
-    .runOnJS(true);
-
-  const rotation = Gesture.Rotation()
-    .onStart(() => {
-      startAngle.value = angle.value;
-    })
-    .onUpdate((event) => {
-      angle.value = (startAngle.value + event.rotation);
-
-      dispatch(actions.rotate({angle: angle.value}));
-    })
-    .runOnJS(true);
-
-  const composed = Gesture.Simultaneous(rotation, pinch, rootPan);
-
-
-
-  const boxAnimatedStyles = useAnimatedStyle(() => {
-    let newX = root_translationX.value * Math.cos(angle.value) + root_translationY.value * Math.sin(angle.value);
-    let newY = -root_translationX.value * Math.sin(angle.value) + root_translationY.value * Math.cos(angle.value);;
-    return {
-      transform: [{ scale: scale.value }, { rotate: `${angle.value * 180 / Math.PI}deg` }, { translateX: newX },
-      { translateY: newY }],
-    }
-  });
-
-  
 
   const [accel, setAccel] = useState(INIT_VALUE);
   const [mag, setMag] = useState(INIT_VALUE);
@@ -151,13 +45,6 @@ export default function ModalScreen() {
 
   const [accelSub, setAccelSub] = useState<EventSubscription>();
   const [magSub, setMagSub] = useState<EventSubscription>();
-
-  const animatedStyles = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translationX.value + pos.x * AV },
-      { translateY: translationY.value + pos.y * AV },
-    ],
-  }));
 
   const askPermissions = async () => {
     await Accelerometer.requestPermissionsAsync();
@@ -247,21 +134,15 @@ export default function ModalScreen() {
 
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-
+    <View style={styles.container}>
       <Animated.Image style={[styles.compass, { transform: [{ rotate: `0deg` }] }]} source={require('@/assets/images/compass.png')} />
       <View style={styles.button_panel} >
         <Button variant='success' disabled={started} style={styles.btn} onPress={onClickStart}>Turn</Button>
         <Button variant='destructive' disabled={!started} style={styles.btn} onPress={onClickReset}>Reset</Button>
       </View>
-      <GestureDetector gesture={composed}>
-        <Animated.Image source={require('@/assets/images/floor-map.png')} style={[styles.img, boxAnimatedStyles]} />
-      </GestureDetector>
-      <GestureDetector gesture={pan}>
-        <Animated.View style={[styles.point, animatedStyles]} />
-      </GestureDetector>
-    </GestureHandlerRootView>
-
+      <Animated.Image source={require('@/assets/images/floor-map.png')} style={[styles.img]} />
+      <Animated.View style={[styles.point]} />
+    </View>
   );
 }
 
