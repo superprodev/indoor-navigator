@@ -9,15 +9,14 @@ import {
   REGISTER,
   persistCombineReducers,
 } from 'redux-persist';
-import createSecureStore from 'redux-persist-expo-securestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { profileSlice } from './profileSlice';
 
 // --- 1. Define Secure Storage Engine ---
 // By default, keys are stored with SecureStore.WHEN_UNLOCKED
-const storage = createSecureStore();
 const config = {
   key: "root",
-  storage,
+  storage: AsyncStorage,
   whitelist: []
 };
 

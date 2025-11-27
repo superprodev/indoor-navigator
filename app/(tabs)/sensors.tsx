@@ -9,15 +9,15 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Icon } from '@/components/ui/icon';
 import Animated from "react-native-reanimated";
-import { ArrowBigUp, Triangle } from "lucide-react-native";
+import { ArrowBigUp, ArrowUp, ArrowUpCircle, ArrowUpIcon, ArrowUpSquare, Triangle } from "lucide-react-native";
 
 const { width, height } = Dimensions.get('screen');
 
 const INIT_VALUE = { x: 0, y: 0, z: 0, timestamp: 0 }
-DeviceMotion.setUpdateInterval(100);
-Magnetometer.setUpdateInterval(100);
+DeviceMotion.setUpdateInterval(200);
+Magnetometer.setUpdateInterval(200);
 
-const FILTER = 0.007;
+const FILTER = 0.1;
 const AV = 20;
 
 export default function Sensors() {
@@ -97,9 +97,9 @@ export default function Sensors() {
         // }
         setVelocity({ x: vX, y: vY, z: vZ })
 
-        let deltaX = vX * deltaT;
-        let deltaY = vY * deltaT;
-        let deltaZ = vZ * deltaT;
+        let deltaX = vX * deltaT * AV;
+        let deltaY = vY * deltaT * AV;
+        let deltaZ = vZ * deltaT * AV;
 
         let rad = heading * Math.PI / 180;
         let cos = -Math.cos(rad);
@@ -135,6 +135,7 @@ export default function Sensors() {
         remove();
         setLastStamp(0);
         setPoints([]);
+        setVelocity({ x: 0, y: 0, z: 0 })
         setHeading(0);
         setPos({ x: 0, y: 0, z: 0 });
     }
@@ -148,14 +149,14 @@ export default function Sensors() {
         <View style={styles.container}>
             <Animated.Image style={{ marginHorizontal: 'auto', width: 150, height: 150 }} source={require('@/assets/images/compass.png')} />
 
-            <Icon name={ArrowBigUp} size={36} color='black' style={{ zIndex: 2, position: 'absolute', left: width / 2 - pos.x * AV - 18, top: height / 2 - pos.y * AV - 18, transform: [{ rotate: `${-heading}deg` }] }} />
-            <Text> Position:  {JSON.stringify(motion?.acceleration, null, 2)} </Text>
+            <Icon name={ArrowBigUp} size={36} color='black' style={{ zIndex: 2, position: 'absolute', left: width / 2 - pos.x - 18, top: height / 2 - pos.y - 18, transform: [{ rotate: `${-heading}deg` }] }} />
+            {/* <Text> Position:  {JSON.stringify(motion?.acceleration, null, 2)} </Text> */}
             <View style={styles.button_panel} >
                 <Button variant='success' disabled={started} style={styles.btn} onPress={onClickStart}>Start</Button>
                 <Button variant='destructive' disabled={!started} style={styles.btn} onPress={onClickReset}>Reset</Button>
             </View>
             <Svg width={width} height={height} style={{ position: 'absolute', zIndex: -1 }}>
-                <Polyline points={points.map((value, index) => (`${width / 2 - value.x * AV},${height / 2 - value.y * AV}`)).join(" ")}
+                <Polyline points={points.map((value, index) => (`${width / 2 - value.x},${height / 2 - value.y}`)).join(" ")}
                     stroke="red"
                     strokeWidth="4"
                     fill="none" />

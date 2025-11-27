@@ -49,7 +49,12 @@
           "motionPermission": "Allow IndoorNavigator to access your device motion"
         }
       ],
-      "expo-secure-store"
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
