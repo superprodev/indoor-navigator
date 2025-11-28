@@ -14,7 +14,11 @@
       "backgroundColor": "#0A0A0A"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "This app needs local network access to find Wi-Fi details.",
+        "com.apple.developer.networking.wifi-info": true // Required for iOS Wi-Fi info
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -47,12 +51,6 @@
         "expo-sensors",
         {
           "motionPermission": "Allow IndoorNavigator to access your device motion"
-        }
-      ],
-      [
-        "expo-dev-client",
-        {
-          "launchMode": "most-recent"
         }
       ]
     ],
