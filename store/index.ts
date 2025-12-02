@@ -17,7 +17,7 @@ import { profileSlice } from './profileSlice';
 const config = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: []
+  whitelist: ['profile']
 };
 
 

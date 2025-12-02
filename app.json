@@ -27,7 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "HIGH_SAMPLING_RATE_SENSORS"
+        "HIGH_SAMPLING_RATE_SENSORS", "ACCESS_FINE_LOCATION"
       ],
       "package": "com.kovalevaroslav861.indoornavigator"
     },
@@ -51,6 +51,24 @@
         "expo-sensors",
         {
           "motionPermission": "Allow IndoorNavigator to access your device motion"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow IndoorNavigator to use your location."
+        }
+      ],
+      [
+        "react-native-wifi-reborn",
+        {
+          "fineLocationPermission": true
+        }
+      ],
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
         }
       ]
     ],

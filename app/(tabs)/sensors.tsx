@@ -3,6 +3,7 @@ import { DeviceMotion, DeviceMotionMeasurement, Magnetometer, MagnetometerMeasur
 import { EventSubscription } from "expo-modules-core";
 import { StyleSheet, Dimensions } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
+import * as Location from 'expo-location';
 
 import { View } from "@/components/ui/view";
 import { Text } from "@/components/ui/text";
@@ -25,8 +26,10 @@ export default function Sensors() {
     const [motion, setMotion] = useState<DeviceMotionMeasurement>();
     const [mag, setMag] = useState<MagnetometerMeasurement>(INIT_VALUE);
     const [pos, setPos] = useState({ x: 0, y: 0, z: 0 });
+    const [location, setLocation] = useState<Location.LocationObject>();
     const [velocity, setVelocity] = useState({ x: 0, y: 0, z: 0 });
     const [lastStamp, setLastStamp] = useState(0);
+    const [locSub, setLocSub] = useState<Location.LocationSubscription>();
     const [heading, setHeading] = useState(0);
     const [points, setPoints] = useState<{ x: number, y: number, z: number }[]>([]);
 
@@ -38,6 +41,7 @@ export default function Sensors() {
     const askPermissions = async () => {
         await DeviceMotion.requestPermissionsAsync();
         await Magnetometer.requestPermissionsAsync();
+        await Location.requestForegroundPermissionsAsync();
 
         const isMag = await Magnetometer.isAvailableAsync();
         const isEnable = await DeviceMotion.isAvailableAsync();
@@ -45,80 +49,87 @@ export default function Sensors() {
         if (isEnable) {
             setDevSub(DeviceMotion.addListener(data => setMotion(data)));
         }
-        if (isMag){
+        if (isMag) {
             setMagSub(Magnetometer.addListener(data => setMag(data)));
         }
+
+        let locSub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.BestForNavigation, timeInterval: 200 }, (data) => {
+            setLocation(data);
+        })
+        setLocSub(locSub);
     }
 
     const remove = () => {
         if (devSub) devSub.remove();
         if (magSub) magSub.remove();
+        if (locSub) locSub.remove();
     }
 
-    useEffect(() => {
-        if (!motion) return;
+    // useEffect(() => {
+        
+    //     if (!motion) return;
 
-        let accel = motion.acceleration;
-        let rotation = motion.rotation;
-        if (!accel || !rotation) return;
+    //     let accel = motion.acceleration;
+    //     let rotation = motion.rotation;
+    //     if (!accel || !rotation) return;
 
-        if (lastStamp === 0) {
-            setLastStamp(accel.timestamp);
-            return;
-        }
+    //     if (lastStamp === 0) {
+    //         setLastStamp(accel.timestamp);
+    //         return;
+    //     }
 
-        const deltaT = (accel.timestamp - lastStamp);
-        setLastStamp(accel.timestamp);
+    //     const deltaT = (accel.timestamp - lastStamp);
+    //     setLastStamp(accel.timestamp);
 
-        // const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y);
-        // if (magnitude > 1.2) {
-        //     const stepLength = 0.7; // meters per step (tweak later)
-        //     const rad = 90 - heading * (Math.PI / 180);
+    //     // const magnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y);
+    //     // if (magnitude > 1.2) {
+    //     //     const stepLength = 0.7; // meters per step (tweak later)
+    //     //     const rad = 90 - heading * (Math.PI / 180);
 
 
-        // }
+    //     // }
 
-        let ax = Math.abs(accel.x) < FILTER ? 0 : accel.x;
-        let ay = Math.abs(accel.y) < FILTER ? 0 : accel.y;
-        let az = Math.abs(accel.z) < FILTER ? 0 : accel.z;
+    //     let ax = Math.abs(accel.x) < FILTER ? 0 : accel.x;
+    //     let ay = Math.abs(accel.y) < FILTER ? 0 : accel.y;
+    //     let az = Math.abs(accel.z) < FILTER ? 0 : accel.z;
 
-        let vX = ax === 0 ? 0 : velocity.x + ax * deltaT;
-        let vY = ay === 0 ? 0 : velocity.y + ay * deltaT;
-        let vZ = az === 0 ? 0 : velocity.z + az * deltaT;
+    //     let vX = ax === 0 ? 0 : velocity.x + ax * deltaT;
+    //     let vY = ay === 0 ? 0 : velocity.y + ay * deltaT;
+    //     let vZ = az === 0 ? 0 : velocity.z + az * deltaT;
 
-        // if (Math.abs(vX - velocity.x) < 1e-3) {
-        //     vX = 0;
-        // }
-        // if (Math.abs(vY - velocity.y) < 1e-3) {
-        //     vY = 0;
-        // }
-        // if (Math.abs(vZ - velocity.z) < 1e-3) {
-        //     vZ = 0;
-        // }
-        setVelocity({ x: vX, y: vY, z: vZ })
+    //     // if (Math.abs(vX - velocity.x) < 1e-3) {
+    //     //     vX = 0;
+    //     // }
+    //     // if (Math.abs(vY - velocity.y) < 1e-3) {
+    //     //     vY = 0;
+    //     // }
+    //     // if (Math.abs(vZ - velocity.z) < 1e-3) {
+    //     //     vZ = 0;
+    //     // }
+    //     setVelocity({ x: vX, y: vY, z: vZ })
 
-        let deltaX = vX * deltaT * AV;
-        let deltaY = vY * deltaT * AV;
-        let deltaZ = vZ * deltaT * AV;
+    //     let deltaX = vX * deltaT * AV;
+    //     let deltaY = vY * deltaT * AV;
+    //     let deltaZ = vZ * deltaT * AV;
 
-        let rad = heading * Math.PI / 180;
-        let cos = -Math.cos(rad);
-        let sin = -Math.sin(rad);
+    //     let rad = heading * Math.PI / 180;
+    //     let cos = -Math.cos(rad);
+    //     let sin = -Math.sin(rad);
 
-        setPos(prev => ({
-            x: prev.x + deltaX * cos - deltaY * sin,
-            y: prev.y + deltaX * sin + deltaY * cos,
-            z: prev.z + deltaZ
-        }));
+    //     setPos(prev => ({
+    //         x: prev.x + deltaX * cos - deltaY * sin,
+    //         y: prev.y + deltaX * sin + deltaY * cos,
+    //         z: prev.z + deltaZ
+    //     }));
 
-        if (deltaX == 0 && deltaY == 0) return;
+    //     if (deltaX == 0 && deltaY == 0) return;
 
-        setPoints(prev => {
-            prev.push(pos);
-            return prev;
-        })
+    //     setPoints(prev => {
+    //         prev.push(pos);
+    //         return prev;
+    //     })
 
-    }, [motion])
+    // });
 
 
     useEffect(() => {
@@ -150,7 +161,7 @@ export default function Sensors() {
             <Animated.Image style={{ marginHorizontal: 'auto', width: 150, height: 150 }} source={require('@/assets/images/compass.png')} />
 
             <Icon name={ArrowBigUp} size={36} color='black' style={{ zIndex: 2, position: 'absolute', left: width / 2 - pos.x - 18, top: height / 2 - pos.y - 18, transform: [{ rotate: `${-heading}deg` }] }} />
-            {/* <Text> Position:  {JSON.stringify(motion?.acceleration, null, 2)} </Text> */}
+            <Text> Position:  {JSON.stringify(location?.coords, null, 2)} </Text>
             <View style={styles.button_panel} >
                 <Button variant='success' disabled={started} style={styles.btn} onPress={onClickStart}>Start</Button>
                 <Button variant='destructive' disabled={!started} style={styles.btn} onPress={onClickReset}>Reset</Button>

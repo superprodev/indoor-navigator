@@ -1,20 +1,24 @@
 
 import { createSlice } from '@reduxjs/toolkit';
+import { WifiEntry } from 'react-native-wifi-reborn';
+
+export interface Fingerprint{
+  detail: string,
+  x: number, 
+  y: number,
+  apArr: WifiEntry[]
+}
 
 export interface ProfileState {
-    scale: number,
-    x: number,
-    y: number,
-    angle: number,
-    points: Array<ProfileState>
+  loading: boolean,
+  error: string,
+  points: Array<Fingerprint>
 }
 
 const initialState: ProfileState = {
-    scale: 1.0,
-    x: 0,
-    y: 0,
-    angle: 0,
-    points: []
+  loading: false,
+  error: "",
+  points: []
 }
 
 export const profileSlice = createSlice({
@@ -22,18 +26,21 @@ export const profileSlice = createSlice({
   initialState,
   reducers: {
     // Redux Toolkit allows writing 'mutating' logic thanks to Immer
-    move: (state, action) => {
-      state.x = action.payload.x;
-      state.y = action.payload.y;
-    },
-    zoom: (state, action) => {
-        state.scale = action.payload.scale;
-    },
-    rotate: (state, action) => {
-        state.scale = action.payload.angle;
-    },
     insert: (state, action) => {
-        state.points.push(action.payload.point);
+      let { points } = action.payload;
+      points.forEach((element: any) => {
+        state.points.push(element);
+      });
+      state.loading = false;
+    },
+    clear: (state) => {
+      state.points = [];
+      state.loading = false;
+      state.error = "";
+    },
+    start: (state) => {
+      state.loading = true;
+      state.error = "";
     }
   },
 });

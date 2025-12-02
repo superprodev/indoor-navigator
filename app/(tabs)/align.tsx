@@ -1,47 +1,65 @@
-import { StyleSheet, Dimensions } from 'react-native';
-import { EventSubscription } from "expo-modules-core";
-
+import { StyleSheet, Dimensions, PermissionsAndroid } from 'react-native';
 import { useState, useEffect } from "react";
-import { Accelerometer, Magnetometer } from 'expo-sensors';
 import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { View } from "@/components/ui/view";
 import { Button } from "@/components/ui/button";
 import { shallowEqual, useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import { ProfileState, profileSlice } from '@/store/profileSlice';
+import { ProfileState, profileSlice, Fingerprint } from '@/store/profileSlice';
 import { RootState, AppDispatch } from '@/store';
+import Svg, { Polyline } from 'react-native-svg';
+import WifiManager, { WifiEntry, WiFiObject } from 'react-native-wifi-reborn';
 
 const { actions } = profileSlice;
 
-const { width, height } = Dimensions.get('screen');
+const { width, height } = Dimensions.get('window');
+
+const cwidth = width - 80;
+const cheight = height - 80;
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
 }
 
-
-export default function() {
+function getSimilarPoint(apArr: WifiEntry[], points: Fingerprint[]): Fingerprint {
+  let result = points[0];
+  return result;
+}
+export default function () {
 
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
   const profile = useAppSelector(state => state.profile, shallowEqual);
-  const { x, y } = profile;
 
-  const scale = useSharedValue(profile.scale);
-  const startScale = useSharedValue(0);
+  const translationX = useSharedValue(0);
+  const translationY = useSharedValue(0);
+  const prevTranslationX = useSharedValue(0);
+  const prevTranslationY = useSharedValue(0);
 
-  const angle = useSharedValue(profile.angle);
-  const startAngle = useSharedValue(0);
+  const [ id, setId ] = useState(0);
+  const { points } = profile;
 
-  const translationX = useSharedValue(x);
-  const translationY = useSharedValue(y);
-  const prevTranslationX = useSharedValue(x);
-  const prevTranslationY = useSharedValue(y);
-
-  const offsetX = useSharedValue(0);
-  const offsetY = useSharedValue(0);
+  const [started, setStarted] = useState(false);
+  const [tracking, setTracking] = useState(false);
+  const [entryList, setEntryList] = useState<WifiEntry[]>([]);
 
   const dispatch = useDispatch<AppDispatch>();
+
+  const askPermissions = async () => {
+    let result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+
+    if (result == PermissionsAndroid.RESULTS.GRANTED) {
+      setId(setInterval(async () => {
+        let data = await WifiManager.loadWifiList();
+        let point = getSimilarPoint(data, points);
+        translationX.value = point.x;
+        translationY.value = point.y;
+        setEntryList(data);
+      }, 1000))
+    }
+
+  }
+
 
 
   const pan = Gesture.Pan()
@@ -65,45 +83,8 @@ export default function() {
         maxTranslateY
       );
 
-      dispatch(actions.move({x: translationX.value, y: translationY.value}));
     })
     .runOnJS(true);
-
-  const pinch = Gesture.Pinch()
-    .onStart(() => {
-      startScale.value = scale.value;
-    })
-    .onUpdate((event) => {
-      scale.value = clamp(
-        startScale.value * event.scale,
-        0.5,
-        Math.min(width / 100, height / 100)
-      );
-
-      dispatch(actions.zoom({scale: scale.value}));
-    })
-    .runOnJS(true);
-
-  const rotation = Gesture.Rotation()
-    .onStart(() => {
-      startAngle.value = angle.value;
-    })
-    .onUpdate((event) => {
-      angle.value = (startAngle.value + event.rotation);
-
-      dispatch(actions.rotate({angle: angle.value}));
-    })
-    .runOnJS(true);
-
-  const composed = Gesture.Simultaneous(rotation, pinch);
-
-
-
-  const boxAnimatedStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }, { rotate: `${angle.value * 180 / Math.PI}deg` }]
-    }
-  });
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [
@@ -112,16 +93,43 @@ export default function() {
     ],
   }));
 
+  const onToggle = () => {
+    if (started) {
+      clearInterval(id);
+      setId(0);
+    } else {
+      askPermissions();
+    }
+    setStarted(prev => !prev);
+  }
+
+  const onTrack = () => {
+    setTracking(prev => !prev);
+  }
+
+  const onAdd = () => {
+    dispatch(actions.insert({ points: [{ x: parseInt(translationX.value.toFixed(0)), y: parseInt(translationY.value.toFixed(0)), apArr: entryList}] }))
+  }
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <Animated.Image style={styles.compass} source={require('@/assets/images/compass.png')} />
-      <GestureDetector gesture={composed}>
-        <Animated.Image source={require('@/assets/images/floor-map.png')} style={[styles.img, boxAnimatedStyles]} />
-      </GestureDetector>
+      <View style={styles.button_panel}>
+        <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPress={onToggle}>{started ? 'Stop' : 'Start'}</Button>
+        { id != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPress={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
+
+        { id != 0 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
+      </View>
+      <Animated.Image source={require('@/assets/images/floor-map1.png')} style={[styles.img]} />
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.point, animatedStyles]} />
       </GestureDetector>
+      <Svg width={width} height={height} style={{ position: 'absolute', zIndex: -1 }}>
+        <Polyline points={points.map((value, index) => (`${width / 2 + value.x + 10},${height / 2 + value.y + 10}`)).join(" ")}
+          stroke="red"
+          strokeWidth="4"
+          fill="none" />
+      </Svg>
     </GestureHandlerRootView>
 
   );
@@ -134,34 +142,34 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    margin: 20,
-  },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    flex: 1
   },
   img: {
-    width: '100%',
-    height: '100%',
+    margin: 'auto',
+    width: cwidth,
+    height: cheight,
     objectFit: 'contain'
   },
   compass: {
     position: 'absolute',
-    right: 10, top: 10,
+    right: 10, top: 20,
     width: 100, height: 100,
     zIndex: 2
   },
   point: {
     height: 20,
     width: 20,
+    left: '50%',
+    top: '50%',
+    position: 'absolute',
     backgroundColor: '#0066ffff',
     borderRadius: 10
   },
   button_panel: {
     position: 'absolute',
-    top: 10,
+    top: 20,
     zIndex: 2,
+    left: 10,
   },
   btn: {
     margin: 5,

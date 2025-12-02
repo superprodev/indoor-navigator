@@ -14,7 +14,7 @@ import { RootState, AppDispatch } from '@/store';
 
 const { actions } = profileSlice;
 
-const { width, height } = Dimensions.get('screen');
+const { width, height } = Dimensions.get('window');
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -112,18 +112,20 @@ export default function ModalScreen() {
   // handlers for buttons
 
   const onClickReset = () => {
-    setStarted(prev => !prev);
-    remove();
-    setLastStamp(0);
-    setAccel(INIT_VALUE);
-    setGrav(INIT_VALUE);
-    setMag(INIT_VALUE);
-    setPos({ x: 0, y: 0, z: 0 });
+
   }
 
   const onClickStart = () => {
-    setStarted(prev => !prev);
-    askPermissions();
+    if(started){
+      remove();
+      setLastStamp(0);
+      setAccel(INIT_VALUE);
+      setGrav(INIT_VALUE);
+      setMag(INIT_VALUE);
+      setPos({ x: 0, y: 0, z: 0 });
+    } else {
+      askPermissions();
+    }
   }
 
   useEffect(() => {
@@ -137,8 +139,7 @@ export default function ModalScreen() {
     <View style={styles.container}>
       <Animated.Image style={[styles.compass, { transform: [{ rotate: `0deg` }] }]} source={require('@/assets/images/compass.png')} />
       <View style={styles.button_panel} >
-        <Button variant='success' disabled={started} style={styles.btn} onPress={onClickStart}>Turn</Button>
-        <Button variant='destructive' disabled={!started} style={styles.btn} onPress={onClickReset}>Reset</Button>
+        <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPress={onClickStart}>Turn</Button>
       </View>
       <Animated.Image source={require('@/assets/images/floor-map.png')} style={[styles.img]} />
       <Animated.View style={[styles.point]} />
@@ -176,7 +177,6 @@ const styles = StyleSheet.create({
   button_panel: {
     position: 'absolute',
     top: 10,
-
     zIndex: 2,
   },
   btn: {
