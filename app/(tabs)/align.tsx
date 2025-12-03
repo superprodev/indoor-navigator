@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions, PermissionsAndroid } from 'react-native';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -22,8 +22,25 @@ function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
 }
 
+function getSqrt(apArr: WifiEntry[], detail: string): number {
+  let json = JSON.parse(detail);
+  let result = 0;
+  for (let i = 0; i < apArr.length && json[apArr[i].BSSID]; i++) {
+    result += (json[apArr[i].BSSID] - apArr[i].level) * (json[apArr[i].BSSID] - apArr[i].level);
+  }
+  return result;
+}
+
 function getSimilarPoint(apArr: WifiEntry[], points: Fingerprint[]): Fingerprint {
   let result = points[0];
+  let diff = 1e8;
+  for (let i = 0; i < points.length; i++) {
+    let sqrt = getSqrt(apArr, points[i].detail);
+    if (diff > sqrt) {
+      diff = sqrt;
+      result = points[i];
+    }
+  }
   return result;
 }
 export default function () {
@@ -36,7 +53,8 @@ export default function () {
   const prevTranslationX = useSharedValue(0);
   const prevTranslationY = useSharedValue(0);
 
-  const [ id, setId ] = useState(0);
+  const [id, setId] = useState(0);
+  const [count, setCount] = useState(0);
   const { points } = profile;
 
   const [started, setStarted] = useState(false);
@@ -45,21 +63,24 @@ export default function () {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const askPermissions = async () => {
-    let result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+  useEffect(() => {
+    if (started) {
+      setId(setTimeout(async () => {
+        setCount(prev => prev + 1);
+        let newEntryList = await WifiManager.reScanAndLoadWifiList();
+        setEntryList(newEntryList);
 
-    if (result == PermissionsAndroid.RESULTS.GRANTED) {
-      setId(setInterval(async () => {
-        let data = await WifiManager.loadWifiList();
-        let point = getSimilarPoint(data, points);
+        if (points.length === 0 || !tracking) return;
+
+        let point = getSimilarPoint(newEntryList, points);
         translationX.value = point.x;
         translationY.value = point.y;
-        setEntryList(data);
-      }, 1000))
+      }, 1000));
+    } else {
+      clearTimeout(id);
+      setId(0);
     }
-
-  }
-
+  }, [count, started, tracking]);
 
 
   const pan = Gesture.Pan()
@@ -93,12 +114,12 @@ export default function () {
     ],
   }));
 
-  const onToggle = () => {
+  const onToggle = async () => {
     if (started) {
       clearInterval(id);
       setId(0);
     } else {
-      askPermissions();
+      await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
     }
     setStarted(prev => !prev);
   }
@@ -108,7 +129,11 @@ export default function () {
   }
 
   const onAdd = () => {
-    dispatch(actions.insert({ points: [{ x: parseInt(translationX.value.toFixed(0)), y: parseInt(translationY.value.toFixed(0)), apArr: entryList}] }))
+    let detail: any = {};
+    for (let i = 0; i < entryList.length; i++) {
+      detail[entryList[i].BSSID] = entryList[i].level;
+    }
+    dispatch(actions.insert({ points: [{ x: parseInt(translationX.value.toFixed(0)), y: parseInt(translationY.value.toFixed(0)), detail: JSON.stringify(detail) }] }))
   }
 
   return (
@@ -116,16 +141,16 @@ export default function () {
       <Animated.Image style={styles.compass} source={require('@/assets/images/compass.png')} />
       <View style={styles.button_panel}>
         <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPress={onToggle}>{started ? 'Stop' : 'Start'}</Button>
-        { id != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPress={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
+        {id != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPress={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
 
-        { id != 0 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
+        {id != 0 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
       </View>
       <Animated.Image source={require('@/assets/images/floor-map1.png')} style={[styles.img]} />
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.point, animatedStyles]} />
       </GestureDetector>
       <Svg width={width} height={height} style={{ position: 'absolute', zIndex: -1 }}>
-        <Polyline points={points.map((value, index) => (`${width / 2 + value.x + 10},${height / 2 + value.y + 10}`)).join(" ")}
+        <Polyline points={points.map((value, index) => (`${width / 2 + value.x + 16},${height / 2 + value.y + 16}`)).join(" ")}
           stroke="red"
           strokeWidth="4"
           fill="none" />
@@ -157,8 +182,8 @@ const styles = StyleSheet.create({
     zIndex: 2
   },
   point: {
-    height: 20,
-    width: 20,
+    height: 32,
+    width: 32,
     left: '50%',
     top: '50%',
     position: 'absolute',

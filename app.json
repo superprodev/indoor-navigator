@@ -27,7 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "HIGH_SAMPLING_RATE_SENSORS", "ACCESS_FINE_LOCATION"
+        "HIGH_SAMPLING_RATE_SENSORS", "ACCESS_FINE_LOCATION", "CHANGE_WIFI_STATE", "ACCESS_WIFI_STATE", "CHANGE_NETWORK_STATE", "ACCESS_NETWORK_STATE"
       ],
       "package": "com.kovalevaroslav861.indoornavigator"
     },
@@ -51,12 +51,6 @@
         "expo-sensors",
         {
           "motionPermission": "Allow IndoorNavigator to access your device motion"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow IndoorNavigator to use your location."
         }
       ],
       [

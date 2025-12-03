@@ -5,8 +5,7 @@ import { WifiEntry } from 'react-native-wifi-reborn';
 export interface Fingerprint{
   detail: string,
   x: number, 
-  y: number,
-  apArr: WifiEntry[]
+  y: number
 }
 
 export interface ProfileState {
