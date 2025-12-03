@@ -9,7 +9,10 @@ import { shallowEqual, useDispatch, useSelector, TypedUseSelectorHook } from 're
 import { ProfileState, profileSlice, Fingerprint } from '@/store/profileSlice';
 import { RootState, AppDispatch } from '@/store';
 import Svg, { Polyline } from 'react-native-svg';
+
 import WifiManager, { WifiEntry, WiFiObject } from 'react-native-wifi-reborn';
+import { SCAN_INTERVAL, WIFI_SCAN } from '@/store/wifiscantask';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { actions } = profileSlice;
 
@@ -59,29 +62,9 @@ export default function () {
 
   const [started, setStarted] = useState(false);
   const [tracking, setTracking] = useState(false);
-  const [entryList, setEntryList] = useState<WifiEntry[]>([]);
+  const [wifiList, setWifiList] = useState<any[]>([]);
 
   const dispatch = useDispatch<AppDispatch>();
-
-  useEffect(() => {
-    if (started) {
-      setId(setTimeout(async () => {
-        setCount(prev => prev + 1);
-        let newEntryList = await WifiManager.reScanAndLoadWifiList();
-        setEntryList(newEntryList);
-
-        if (points.length === 0 || !tracking) return;
-
-        let point = getSimilarPoint(newEntryList, points);
-        translationX.value = point.x;
-        translationY.value = point.y;
-      }, 1000));
-    } else {
-      clearTimeout(id);
-      setId(0);
-    }
-  }, [count, started, tracking]);
-
 
   const pan = Gesture.Pan()
     .minDistance(1)
@@ -114,14 +97,31 @@ export default function () {
     ],
   }));
 
-  const onToggle = async () => {
-    if (started) {
-      clearInterval(id);
-      setId(0);
-    } else {
-      await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+  const trackWifi = async () => {
+    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+    let data = await WifiManager.reScanAndLoadWifiList();
+    setWifiList(data);
+    console.log(data);
+    if (tracking && points.length > 1) {
+      let result = getSimilarPoint(data, points);
+      translationX.value = result.x;
+      translationY.value = result.y;
     }
+  }
+
+  useEffect(() => {
+    if(!started) {
+      return; 
+    }
+
+    trackWifi();
+  }, [wifiList, started]);
+
+  const onToggle = async () => {
     setStarted(prev => !prev);
+    if(started){
+      setWifiList([]);
+    }
   }
 
   const onTrack = () => {
@@ -130,8 +130,8 @@ export default function () {
 
   const onAdd = () => {
     let detail: any = {};
-    for (let i = 0; i < entryList.length; i++) {
-      detail[entryList[i].BSSID] = entryList[i].level;
+    for (let i = 0; i < wifiList.length; i++) {
+      detail[wifiList[i].BSSID] = wifiList[i].level;
     }
     dispatch(actions.insert({ points: [{ x: parseInt(translationX.value.toFixed(0)), y: parseInt(translationY.value.toFixed(0)), detail: JSON.stringify(detail) }] }))
   }
@@ -140,10 +140,10 @@ export default function () {
     <GestureHandlerRootView style={styles.container}>
       <Animated.Image style={styles.compass} source={require('@/assets/images/compass.png')} />
       <View style={styles.button_panel}>
-        <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPress={onToggle}>{started ? 'Stop' : 'Start'}</Button>
-        {id != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPress={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
+        <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPressOut={onToggle}>{started ? 'Stop' : 'Start'}</Button>
+        {started && wifiList.length != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPressOut={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
 
-        {id != 0 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
+        {started && wifiList.length != 0 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
       </View>
       <Animated.Image source={require('@/assets/images/floor-map1.png')} style={[styles.img]} />
       <GestureDetector gesture={pan}>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     top: '50%',
     position: 'absolute',
     backgroundColor: '#0066ffff',
-    borderRadius: 10
+    borderRadius: 16
   },
   button_panel: {
     position: 'absolute',

@@ -27,7 +27,15 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "HIGH_SAMPLING_RATE_SENSORS", "ACCESS_FINE_LOCATION", "CHANGE_WIFI_STATE", "ACCESS_WIFI_STATE", "CHANGE_NETWORK_STATE", "ACCESS_NETWORK_STATE"
+        "HIGH_SAMPLING_RATE_SENSORS", 
+        "ACCESS_FINE_LOCATION", 
+        "CHANGE_WIFI_STATE", 
+        "ACCESS_WIFI_STATE", 
+        "CHANGE_NETWORK_STATE", 
+        "ACCESS_NETWORK_STATE", 
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "package": "com.kovalevaroslav861.indoornavigator"
     },
