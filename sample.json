@@ -1,0 +1,226 @@
+[
+    {
+        "BSSID": "b6:23:d4:0c:84:fc",
+        "SSID": "Guest WiFi",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5580,
+        "level": -81,
+        "timestamp": 15736294668136
+    },
+    {
+        "BSSID": "84:39:8f:25:32:d9",
+        "SSID": "ovenmitts",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5520,
+        "level": -93,
+        "timestamp": 15736294131385
+    },
+    {
+        "BSSID": "00:3e:73:ed:cd:95",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5700,
+        "level": -86,
+        "timestamp": 15736295233243
+    },
+    {
+        "BSSID": "00:3e:73:ed:cd:96",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 5700,
+        "level": -86,
+        "timestamp": 15736295233320
+    },
+    {
+        "BSSID": "00:3e:73:ed:cd:91",
+        "SSID": "Eagle",
+        "capabilities": "[WPA2-EAP/SHA1+FT/EAP-CCMP][RSN-EAP/SHA1+FT/EAP-CCMP][ESS]",
+        "frequency": 5700,
+        "level": -87,
+        "timestamp": 15736295232988
+    },
+    {
+        "BSSID": "00:3e:73:ed:cd:92",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5700,
+        "level": -86,
+        "timestamp": 15736295233125
+    },
+    {
+        "BSSID": "00:3e:73:ed:ca:96",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 5240,
+        "level": -88,
+        "timestamp": 15736292571054
+    },
+    {
+        "BSSID": "00:3e:73:ed:ce:b2",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5320,
+        "level": -84,
+        "timestamp": 15736293824125
+    },
+    {
+        "BSSID": "00:3e:73:ed:ce:b1",
+        "SSID": "Eagle",
+        "capabilities": "[WPA2-EAP/SHA1+FT/EAP-CCMP][RSN-EAP/SHA1+FT/EAP-CCMP][ESS]",
+        "frequency": 5320,
+        "level": -85,
+        "timestamp": 15736293823955
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:02",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5500,
+        "level": -62,
+        "timestamp": 15736293947209
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:01",
+        "SSID": "Eagle",
+        "capabilities": "[WPA2-EAP/SHA1+FT/EAP-CCMP][RSN-EAP/SHA1+FT/EAP-CCMP][ESS]",
+        "frequency": 5500,
+        "level": -62,
+        "timestamp": 15736293947043
+    },
+    {
+        "BSSID": "00:3e:73:a4:47:c3",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5260,
+        "level": -86,
+        "timestamp": 15736293274385
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:06",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 5500,
+        "level": -62,
+        "timestamp": 15736293948291
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:05",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5500,
+        "level": -62,
+        "timestamp": 15736293947297
+    },
+    {
+        "BSSID": "00:3e:73:a4:47:c1",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5260,
+        "level": -86,
+        "timestamp": 15736293274222
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:35",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5680,
+        "level": -89,
+        "timestamp": 15736295098512
+    },
+    {
+        "BSSID": "00:3e:73:ed:ce:22",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5540,
+        "level": -93,
+        "timestamp": 15736294260743
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:36",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 5680,
+        "level": -88,
+        "timestamp": 15736295099356
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:31",
+        "SSID": "Eagle",
+        "capabilities": "[WPA2-EAP/SHA1+FT/EAP-CCMP][RSN-EAP/SHA1+FT/EAP-CCMP][ESS]",
+        "frequency": 5680,
+        "level": -89,
+        "timestamp": 15736295098267
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:32",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5680,
+        "level": -89,
+        "timestamp": 15736295098398
+    },
+    {
+        "BSSID": "00:3e:73:ed:c7:c6",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 5280,
+        "level": -63,
+        "timestamp": 15736295306731
+    },
+    {
+        "BSSID": "00:3e:73:ed:ce:25",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5540,
+        "level": -91,
+        "timestamp": 15736294260912
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:24",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 2412,
+        "level": -59,
+        "timestamp": 15736290978059
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:25",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 2412,
+        "level": -62,
+        "timestamp": 15736290978800
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:21",
+        "SSID": "(hidden SSID)",
+        "capabilities": "[WPA-PSK-TKIP][ESS]",
+        "frequency": 2412,
+        "level": -61,
+        "timestamp": 15736290977964
+    },
+    {
+        "BSSID": "30:b7:d4:b2:e1:48",
+        "SSID": "Chatr-Emtc",
+        "capabilities": "[WPA-PSK-CCMP][WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS][WPS]",
+        "frequency": 2412,
+        "level": -81,
+        "timestamp": 15736290989883
+    },
+    {
+        "BSSID": "00:3e:73:ed:d0:27",
+        "SSID": "Walmartwifi",
+        "capabilities": "[ESS]",
+        "frequency": 2412,
+        "level": -62,
+        "timestamp": 15736290981600
+    },
+    {
+        "BSSID": "00:3e:73:ed:ce:b5",
+        "SSID": "wmdemo",
+        "capabilities": "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+        "frequency": 5320,
+        "level": -85,
+        "timestamp": 15736293824211
+    }
+]

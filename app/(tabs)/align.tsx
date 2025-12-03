@@ -100,10 +100,12 @@ export default function () {
   const trackWifi = async () => {
     await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
     let data = await WifiManager.reScanAndLoadWifiList();
-    setWifiList(data);
-    console.log(data);
+    let walmartList: WifiEntry[] = data.filter(value => value.SSID == "Walmartwifi")
+    setWifiList(walmartList);
+    console.log(walmartList);
+
     if (tracking && points.length > 1) {
-      let result = getSimilarPoint(data, points);
+      let result = getSimilarPoint(walmartList, points);
       translationX.value = result.x;
       translationY.value = result.y;
     }
