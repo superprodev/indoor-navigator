@@ -146,7 +146,7 @@ export default function () {
         <Button variant={started ? 'destructive' : 'success'} style={styles.btn} onPressOut={onToggle}>{started ? 'Stop' : 'Start'}</Button>
         {started && wifiList.length != 0 && <Button variant={tracking ? 'outline' : 'default'} style={styles.btn} onPressOut={onTrack}>{tracking ? 'Stop' : 'Track'}</Button>}
 
-        {started && wifiList.length > 4 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
+        {started && wifiList.length > 3 && <Button variant='success' style={styles.btn} onPress={onAdd}>Add</Button>}
       </View>
       <Animated.Image source={require('@/assets/images/floor-map1.png')} style={[styles.img]} />
       <GestureDetector gesture={pan}>
